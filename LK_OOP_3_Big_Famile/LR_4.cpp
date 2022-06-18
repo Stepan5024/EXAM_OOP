@@ -13,7 +13,7 @@ using namespace std;
 
 #include "ModelingCar.h" 	// объявление классов
 #include "GetConWin.h"		// указатель на консольное окно
-#include "CarExhaustPipe.h"
+
 
 //макрос для определения кода нажатой клавиши
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
@@ -36,6 +36,28 @@ HDC hdc;	// Объявим контекст устройства
 /***********************************************************************/
 /*               О С Н О В Н А Я    П Р О Г Р А М М А                  */
 /***********************************************************************/
+
+bool KEY[256];
+void GetKEY()
+{
+	int i = 0;
+	while (i < 256)
+	{
+		if (GetAsyncKeyState(i)) KEY[i] = 1; else KEY[i] = 0;
+		i++;
+	}
+}
+//для удобства ввода
+void PressKey(int VkCode)
+{
+	while (1)
+		if (KEY_DOWN(VkCode))
+			break;
+}//PressKey()
+
+bool ErrorCode = false;
+
+
 int main()
 {
 	// когда целесообразно использовать веерную иерархию
@@ -57,62 +79,44 @@ int main()
 		if (hdc != 0)
 		{
 			
-			/************  Б А З О В Ы Й   К Л А С С  ***********/
-			//Base ABase(990, 200, 300, 40, "black");
-			//ABase.Show();
-			/************	 М А Ш И Н А	 ***********/
-			//Car  ACar(950, 400, 300, 50, "red");  // инициализация машины
-			//ACar.Show();			// показать машину
 			
-			//ACarWithHood.Show();
-
-			/************	 М А Ш И Н А  С   Б А Г А Ж Н И К О М	 ***********/
-			//CarWithLuggade ACarWithLuggade(950, 590, 300, 50, "black");
-			//ACarWithLuggade.Show();
-			/************	 М А Ш И Н А  С  К А П О Т О М   И   Б А Г А Ж Н И К О М	 ***********/
-			//CarWithHoodAndLuggade ACarWithHoodAndLuggade(650, 250, 300, 50, "gren");
-			//ACarWithHoodAndLuggade.Show();
-			/************	 К И Р П И Ч	 ***********/
-			//Brick ABrick(625, 550, 80, 30);
-			//ABrick.Show();
-			/************	 М А Ш И Н А  С   К А П О Т О М	  И  В Ы Х Л О П Н О Й   Т Р У Б О Й	***********/
-			//CarExhaustPipe ACarExhaustPipe(550, 550, 500, 50, "red");
-			//ACarExhaustPipe.Show();
-			//ACarExhaustPipe.Drag();
 			const int Max_CarsNumber = 5;
 			const int Max_CollisionNumber = 3;
+
+			int X0_Barrier = 960;
+			int Y0_Barrier = 550;
+
 			Barriers* matrixBarriers[3] = {
 				// матрица переходов для смены 
-							  { new Canister(435, 550, 50, 50, RGB(0, 227, 0)) },
-							  { new Brick(435, 350, 80, 40, RGB(255, 227, 135)) } ,
-							  { new Lightning(500, 600, 90, 90, RGB(255, 227, 0)) }
+							  { new Canister(X0_Barrier, Y0_Barrier, 50, 50, RGB(0, 227, 0)) },
+							  { new Brick(050, 350, 80, 40, RGB(255, 227, 135)) } ,
+							  { new Lightning(800, 600, 90, 90, RGB(255, 227, 0)) }
 			};
 			//массив координат объектов для коллизии
 			int CollisionX[Max_CollisionNumber] = { matrixBarriers[0]->GetX(), matrixBarriers[1]->GetX(),
-				matrixBarriers[2]->GetX()};
+				matrixBarriers[2]->GetX()}; // правая нижняя координата препятствия
 			int CollisionY[Max_CollisionNumber] = { matrixBarriers[0]->GetY(), matrixBarriers[1]->GetY(),
-				matrixBarriers[2]->GetY()};
+				matrixBarriers[2]->GetY()}; // левая нижняя координата препятствия
 
-			int CollisionX_Board[Max_CollisionNumber] = { CollisionX[0] + matrixBarriers[0]->GetLength(),
-														  CollisionX[1] + matrixBarriers[1]->GetLength() * 2,
-														  CollisionX[2] + matrixBarriers[2]->GetLength()};
-			int CollisionY_Board[Max_CollisionNumber] = { CollisionY[0] + matrixBarriers[0]->GetLength(),
-														  CollisionY[1] + matrixBarriers[1]->GetLength() * 2,
-														  CollisionY[2] + matrixBarriers[2]->GetLength()};
+			// левая верхняя координата препятствия
+			int CollisionX_Board[Max_CollisionNumber] = { CollisionX[0] - matrixBarriers[0]->GetLength(),
+														  CollisionX[1] - matrixBarriers[1]->GetLength() * 2,
+														  CollisionX[2] - matrixBarriers[2]->GetLength()};
+			// правая верхняя координата препятствия
+			int CollisionY_Board[Max_CollisionNumber] = { CollisionY[0] - matrixBarriers[0]->GetLength(),
+														  CollisionY[1] - matrixBarriers[1]->GetLength() * 2,
+														  CollisionY[2] - matrixBarriers[2]->GetLength()};
 
 
 			//массив переходов 
-			int CollisionStates[Max_CollisionNumber][Max_CarsNumber] = { {-1, 5, 5, 5, 2, },
-																		 {-1, 3, 3, 3, 3, },
+			int CollisionStates[Max_CollisionNumber][Max_CarsNumber] = { {5, 5, 5, 5, 2, },
+																		 {3, 3, 3, 3, 3, },
 																		 {-1, -1, -1, -1, -1} };
 
 			Car* BufCars[Max_CarsNumber];
 			Barriers* BufCollision[Max_CollisionNumber];
 
 			
-
-
-
 			int Choose = 0;			// вариант 
 			int DragChoose = 0;
 			int CollisionChoose = 0;
@@ -120,7 +124,7 @@ int main()
 			int CollisionCode = 0;
 			int NewCollisionState = 0;
 
-			int x0 = 350;
+			int x0 = 950;
 			int y0 = 250;
 			int add_x0 = x0;
 			int add_y0 = y0;
@@ -178,109 +182,160 @@ int main()
 			/*pIDraw = &ACarWithHood;
 			pIDraw->Show();
 			*/
-			/*indBarriers = matrixBarriers[0];
-			indBarriers->Show();
-			indBarriers = matrixBarriers[1];
-			indBarriers->Show();
-			indBarriers = matrixBarriers[2];
-			indBarriers->Show();*/
-
-			HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255)); // цвет тела - кирпичный; //создаём объект-кисть
-			/*SelectObject(hdc, hBrush);		//делаем кисть активной
-
-			hBrush = CreateSolidBrush(RGB(255, 255, 255)); // цвет тела - кирпичный; //создаём объект-кисть
-			SelectObject(hdc, hBrush);		//делаем кисть активной
-
-			*/
 			
-
-			//indCar = matrixCar[2];
-			//indCar->Show();
-			int step = 20;
-			while (1)
+			int step = 50;
+			GetKEY();
+			cout << "\nНажмите Enter, чтобы начать";
+			while (!KEY_DOWN(VK_ESCAPE)) //Конец работы "Esc"
 			{
-				if (KEY_DOWN(49)) {      // нажимаем 1
-					
-					indCar->Hide();
-					indCar = new Car(add_x0, add_y0, 300, 50, RGB(255, 0, 0));
-					indCar->Show();
-				}
-				if (KEY_DOWN(50)) {     // нажимаем 2
-					
-					indCar->Hide();
-					indCar = new CarExhaustPipe(add_x0, add_y0, 300, 50, RGB(255, 0, 0));
-					indCar->Show();
-				}
 
-				if (KEY_DOWN(37)) {   // нажимаем стрелку влево
-					add_x0 -= step;
-					indCar->MoveTo(add_x0, add_y0);
+				PressKey(0x0D); // enter
 
+				ErrorCode = false;
+
+				//очистка буфера
+				cin.clear();
+				while (cin.get() != '\n')
+				{
+					continue;
 				}
+				while (1) {
+					cout << "Введите номер класса (состояния) автомобиля (от 1 до 5): ";
+					cin >> Choose;
+					cout << endl;
 
-				if (KEY_DOWN(38)) {   // нажимаем стрелку вверх
-					add_y0 -= step;
-					indCar->MoveTo(add_x0, add_y0);
-				}
-
-				if (KEY_DOWN(39)) {   // нажимаем стрелку вправо
-					add_x0 += step;
-					indCar->MoveTo(add_x0, add_y0);
-				}
-				if (KEY_DOWN(40)) {   // нажимаем стрелку вниз
-					add_y0 += step;
-					indCar->MoveTo(add_x0, add_y0);
-
-				}
-
-				if (KEY_DOWN(82)) {     // нажимаем клавишу R для возвращения в исходную точку
-					indCar->Hide();
-					indCar = new Car(x0, y0, 300, 50, RGB(255, 0, 0));
-					indCar->Show();
-				}
-				if (KEY_DOWN(83)) { // клавиша s
-					cout << " к. х car = " << indCar->GetX() << " к. у car = " << indCar->GetY() << " car len = " << indCar->GetBaseLenght() << endl;
-					cout << " id barriers = " << indBarriers->GetTypeId() << " к. x кирпич = " << indBarriers->GetX() << " к. у кирпич = " << indBarriers->GetY() << endl;
-
-				}
-				
-				if (indCar->Touch(indCar->GetX(), indCar->GetY(), indCar->GetBaseLenght(), 150, indBarriers->GetX(), indBarriers->GetY(), indBarriers->GetLength())) { // при прикосновении кирпича к машине
-					cout << "Врезался" << endl;
-					indCar->Hide(); // указатель на текущую машину вызывает метод скрыть текущую машину
-					indBarriers->Hide(); // указатель на текущее препятствие вызывает метод скрыть текущую помеху
-
-					hBrush = CreateSolidBrush(RGB(255, 255, 255)); // цвет тела - кирпичный; //создаём объект-кисть
-					SelectObject(hdc, hBrush);		//делаем кисть активной
-					if (indBarriers->GetTypeId() == 0) { // кирпич
-						// меняется указатель через повышение индекса в массиве машины и помехи
-						indCar = matrixCar[0];
-						indBarriers = matrixBarriers[0]; // меняем на взаимодействие с канистрой
+					if (Choose > 5 or Choose < 1) {
+						cout << "Неправильный номер класса автомобиля!" << endl;
+						ErrorCode = true;
 						
-					}
-					else if (indBarriers->GetTypeId() == 1) { // канистра
-						indCar = matrixCar[1];
-						indBarriers = matrixBarriers[1]; // меняем на взаимодействие с кирпичом
-					}
-					indCar->Show();
+					} else break;
+				}
+				indCar = BufCars[Choose - 1];
+
+				cout << "Нажмите S, чтобы отобразить элементы";
+				PressKey(0x53); // клавиша S
+				indCar->Show();
+				for (i = 0; i < Max_CollisionNumber; i++) {
+
+					indBarriers = BufCollision[i];
 					indBarriers->Show();
 
-					hBrush = CreateSolidBrush(RGB(255, 255, 255)); // цвет тела - кирпичный; //создаём объект-кисть
-					SelectObject(hdc, hBrush);		//делаем кисть активной
+				}//for()
 
-					add_x0 = x0;
-					add_y0 = y0;
+				while (1) {
+					if (KEY_DOWN(VK_ESCAPE)) break; // escape
+
 					
+					cin.clear(); //очистка буфера
+					
+
+					//cout << "\nВыберите, какой объект вы собираетесь перетащить:" << endl;
+					//cout << "1. Машину";
+					//cout << "\n2. Объект коллизии" << endl;
+					//cout << "Введите вариант 1 или 2: ";
+					//cin >> DragChoose;
+					DragChoose = 1;
+
+					if (DragChoose == 1) {
+
+
+					/***************************************************/
+					/*				  РАБОТА С КОЛЛИЗИЯМИ			   */
+					/**************************************************/
+
+						cout << "\nНажмите D, чтобы двигать объект";
+						PressKey(68);
+						indCar->Drag(step, CollisionX, CollisionY, CollisionX_Board, CollisionY_Board, CollisionCode, Max_CollisionNumber);
+						Sleep(500);
+
+						cout << "Номер класса для взаимодействия " << Choose << " - " << " Код коллизии " << CollisionCode << endl;
+
+						if (CollisionCode > 0) {
+							NewCollisionState = CollisionStates[CollisionCode - 1][Choose - 1];
+						}
+
+						cout << "Новое коллизионное состояние " << NewCollisionState << endl;
+
+						if (NewCollisionState > 0) {
+
+							add_x0 = indCar->GetX();
+							add_y0 = indCar->GetY();
+
+							indBarriers = BufCollision[CollisionCode - 1];
+							indBarriers->Hide();
+							indCar = BufCars[NewCollisionState - 1];
+
+							CollisionX[CollisionCode - 1] = -100; // убираем взаимодействующие объекты за экран
+							CollisionY[CollisionCode - 1] = -100; // убираем взаимодействующие объекты за экран
+							CollisionX_Board[CollisionCode - 1] = -100; // убираем взаимодействующие объекты за экран
+							CollisionY_Board[CollisionCode - 1] = -100; // убираем взаимодействующие объекты за экран
+
+							indCar->SetX(add_x0);
+							indCar->SetY(add_y0);
+							indCar->Show();
+						}
+
+					}
+					
+
+					/*if (DragChoose == 2) {
+						//очистка буфера
+						cin.clear();
+						while (cin.get() != '\n')
+						{
+							continue;
+						}
+
+						cout << "\nВыберите, какой объект столкновения вы собираетесь перетащить (от 1 до 2): ";
+
+						cin >> CollisionChoose;
+						if (CollisionChoose > 0 and CollisionChoose < 7) {
+							indBarriers = BufCollision[CollisionChoose - 1];
+						}
+						else break;
+
+						cout << "\nНажмите D, чтобы двигать объект";
+						PressKey(68); // D
+
+						HBRUSH hBrush = CreateSolidBrush(RGB(255, 53, 255));
+						SelectObject(hdc, hBrush);		//делаем кисть активной
+
+						indBarriers->Drag(step);
+						Sleep(500);
+
+						cout << "Номер класса для взаимодействия " << Choose << " - " << " Код коллизии " << CollisionCode << endl;
+
+						if (CollisionCode > 0) {
+							NewCollisionState = CollisionStates[CollisionCode - 1][Choose - 1];
+						}
+
+						cout << "Новое коллизионное состояние " << NewCollisionState << endl;
+
+						if (NewCollisionState > 0) {
+
+							add_x0 = indCar->GetX();
+							add_y0 = indCar->GetY();
+
+							indBarriers = BufCollision[CollisionCode - 1];
+							indBarriers->Hide();
+							indCar->Hide();
+
+							indCar = BufCars[NewCollisionState - 1];
+
+							CollisionX[CollisionCode - 1] = -100; // убираем взаимодействующие объекты за экран
+							CollisionY[CollisionCode - 1] = -100; // убираем взаимодействующие объекты за экран
+							CollisionX_Board[CollisionCode - 1] = -100; // убираем взаимодействующие объекты за экран
+							CollisionY_Board[CollisionCode - 1] = -100; // убираем взаимодействующие объекты за экран
+
+							indCar->SetX(add_x0);
+							indCar->SetY(add_y0);
+							indCar->Show();
+						}
+					}*/
 				}
-				if (KEY_DOWN(VK_ESCAPE))//Конец работы "Esc"
-					break;
-
-				Sleep(100);
 			}
-			
-
 			delete indBarriers;
 			delete indCar;
-			
 			
 		}
 	}

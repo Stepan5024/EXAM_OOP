@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LR_2.cpp">
+    <ClCompile Include="LR_4.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="ModelingCar.cpp">
@@ -30,9 +30,6 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="GetConWin.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="CarExhaustPipe.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

@@ -140,11 +140,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GetConWin.cpp" />
-    <ClCompile Include="LR_2.cpp" />
+    <ClCompile Include="LR_4.cpp" />
     <ClCompile Include="ModelingCar.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CarExhaustPipe.h" />
     <ClInclude Include="GetConWin.h" />
     <ClInclude Include="ModelingCar.h" />
   </ItemGroup>

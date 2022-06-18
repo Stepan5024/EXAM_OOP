@@ -47,7 +47,8 @@ public:
 	virtual void Show() = 0;						//показать фигуру 
 	virtual void Hide() = 0;						//спрятать фигуру
 	virtual void MoveTo(int NewX, int NewY) = 0;	//переместить точку
-	virtual void Drag(int Step) = 0;				//буксировка фигуры
+	virtual void Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Board[], int CollisionY_Board[],
+		int& CollisionCode, const int Max_CollisionNubmer) = 0;				//буксировка фигуры
 };
 
 class Barriers : public IDraw { // Абстрактный базовый класс
@@ -60,7 +61,9 @@ public:
 	virtual void Show() override;
 	virtual void Hide() override;
 	void MoveTo(int NewX, int NewY) override;			// переместить объект по новым координатам
-	virtual void Drag(int Step) override;
+	virtual void Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Board[], int CollisionY_Board[],
+		int& CollisionCode, const int Max_CollisionNubmer) override;
+	virtual void Drag(int Step);
 	virtual int GetTypeId() = 0;
 	virtual int GetLength() = 0;
 };
@@ -131,7 +134,7 @@ public:
 
 
 /*-----------------------  Класс Base ----------------------------------*/
-class ABase : public IDraw { // абстрактный класс
+class Base : public IDraw { // абстрактный класс
 private:
 
 	int BodyCarLenght;				// длина корпуса
@@ -140,7 +143,7 @@ private:
 
 public:
 
-	ABase(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor = RGB(255, 0, 0));
+	Base(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor = RGB(255, 0, 0));
 	virtual void DrawBaseBody(HPEN Pen) = 0;		// отрисует заданным цветом основу на которую садятся колеса
 	virtual void DrawBaseWheels(HPEN Pen) = 0;		// отрисует заданным колеса
 	virtual int GetTypeId() = 0; // ID класса
@@ -150,16 +153,17 @@ public:
 	void SetBaseLenght(int NewBaseLenght) { BodyCarLenght = NewBaseLenght; };
 	
 	virtual bool Touch(int AnotherXCarCoord, int AnotherYCarCoord, int CarLenght, int CarHeight, int AnotherXBrickCoord, int AnotherYBrickCoord, int BrickLength) = 0;
-	virtual void Drag(int Step) override;						// передвижение фигуры по стрелкам
+	virtual void Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Board[], int CollisionY_Board[],
+		int& CollisionCode, const int Max_CollisionNubmer) override;						// передвижение фигуры по стрелкам
 	virtual void MoveTo(int NewX, int NewY) override;	// переместить объект по новым координатам
 	virtual void Show() override;				// отрисует базовый автомобиль
 	virtual void Hide() override;				// спрячет базовый автомобиль
 };
 
 /*-----------------------  Класс Car  -------------------------------*/
-class Car : public ABase {
+class Car : public Base {
 private:	
-	int id = 0;							// id класса
+	int id = 1;							// id класса
 
 public:
 	Car(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor);
@@ -176,8 +180,8 @@ public:
 
 class CarWithHood : public Car {		// машина с капотом
 private:
-	int id = 1;							// id класса
-	int Price;			// цена машины, пока не описал сет и гет
+	int id = 2;							// id класса
+
 public:
 	CarWithHood(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor); // по умолчанию параметры конструктора
 	virtual void Show() override;				// показать фигуру машины с капотом
@@ -190,7 +194,7 @@ public:
 
 class CarWithLuggade : public Car { // машина с багажником
 private:
-	int id = 2;							// id класса
+	int id = 3;							// id класса
 
 public: 
 	CarWithLuggade(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor);
@@ -204,7 +208,7 @@ public:
 
 class CarWithHoodAndLuggade : public CarWithHood {		// машина с капотом
 private:
-	int id = 3;							// id класса
+	int id = 4;							// id класса
 public:
 	CarWithHoodAndLuggade(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor); // по умолчанию параметры конструктора
 	virtual void Show() override;				// показать фигуру машины с капотом
@@ -215,3 +219,32 @@ public:
 		return id;
 	}
 };
+
+class CarExhaustPipe : public CarWithHood {
+private:
+	int id = 5;							// id класса
+public:
+	CarExhaustPipe(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor); // по умолчанию параметры конструктора
+
+	virtual void Show();				// показать фигуру  
+	virtual void Hide();				// скрыть фигуру 
+	void DrawExhaustPipe(HPEN Pen);		// выхлопная труба заданного цвета
+	virtual int GetTypeId() {
+		return id;
+	}
+};
+
+class CarWithBattery : public CarWithHood {
+private:
+	int id = 6;							// id класса
+public:
+	CarWithBattery(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor); // по умолчанию параметры конструктора
+
+	virtual void Show();				// показать фигуру  
+	virtual void Hide();				// скрыть фигуру 
+	void DrawBattery(HPEN Pen);		// выхлопная труба заданного цвета
+	virtual int GetTypeId() {
+		return id;
+	}
+};
+

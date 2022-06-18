@@ -8,7 +8,7 @@
 #include <windows.h>
 #include "ModelingCar.h"	//объявление классов
 #include <iostream>
-#include "CarExhaustPipe.h"
+
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 /*   Г Л О Б А Л Ь Н Ы Е   П Е Р Е М Е Н Н Ы Е  И  К О Н С Т А Н Т Ы   */
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -102,6 +102,8 @@ void Brick::Show() {				// отрисует кирпич
 	SelectObject(hdc, hBrush);		//делаем кисть активной
 	DrawBrick(hBrush);
 	DeleteObject(hBrush);			// Уничтожим нами созданные объекты
+	hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
 };
 
 void Brick::Hide() { // спрячет кирпич
@@ -109,6 +111,8 @@ void Brick::Hide() { // спрячет кирпич
 	SelectObject(hdc, hBrush);		//делаем кисть активной
 	DrawBrick(hBrush);
 	DeleteObject(hBrush);			// Уничтожим нами созданные объекты
+	hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
 };
 
 int Brick::GetBrickWidth() {		// получить ширину
@@ -164,23 +168,19 @@ Barriers::Barriers(int InitX, int InitY, COLORREF InitColor) : IDraw(InitX, Init
 }
 
 void Barriers::Show() { // отрисует канистру
-	/*HPEN Pen = CreatePen(PS_SOLID, 2, RGB(0, 128, 0)); // Зададим перо и цвет пера - зеленый;
-	int height = 50; // высота канистры
-	int lenght = 50; // длина канистры
-	Rectangle(hdc, X - lenght, Y - height, X, Y); // канистра
-	DeleteObject(Pen);			// Уничтожим нами созданные объекты*/
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
 };
 
 void Barriers::Hide() { // спрячет канистру
-	/*HPEN Pen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // Зададим перо и цвет пера - зеленый;
-	int height = 50; // высота канистры
-	int lenght = 50; // длина канистры
-	Rectangle(hdc, X - lenght, Y - height, X, Y); // канистра
-	DeleteObject(Pen);			// Уничтожим нами созданные объекты*/
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
+	
 };
 
-
 void Barriers::MoveTo(int NewX, int NewY) {
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
 	Hide();			// стирание канистры
 	X = NewX;		// поменять координаты
 	Y = NewY;
@@ -194,14 +194,10 @@ void Barriers::Drag(int Step) {
 	int i;
 	//бесконечный цикл буксировки фигуры
 	while (1) {
+	
 
 		if (KEY_DOWN(VK_ESCAPE)) break;		//выход по «escape»
-		/*детект столкновения
-		if (((NextX > MillX - 1.1 * MillWidth) and (NextX < MillX + 0.1 * MillWidth)) and ((NextY > MillY - MillHight) and (NextY < MillY))) {
-			//cout << "\n\t\tIn collision" << endl;
-			InCollisionFlag = true;
-			break;
-		}*/
+		
 
 		//направление движения объекта
 		if (KEY_DOWN(VK_LEFT)) {			//стрелка влево
@@ -239,6 +235,76 @@ void Barriers::Drag(int Step) {
 	}//while
 
 }//Drag
+void Barriers::Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Board[], int CollisionY_Board[],
+	int& CollisionCode, const int Max_CollisionNubmer) {
+	/*int NextX, NextY;				//новые координаты фигуры
+
+	NextX = GetX();
+	NextY = GetY();
+	int i;
+	//бесконечный цикл буксировки фигуры
+	while (1) {
+		bool ErrorCode = false;
+
+		if (KEY_DOWN(VK_ESCAPE)) break;		//выход по «escape»
+		for (i = 0; i < Max_CollisionNubmer; i++) {
+			if (
+				(NextY <= CollisionY[i]) // если над препятствием
+				and (NextY >= CollisionY_Board[i]) // под препятствием
+				and (NextX - GetLength() <= CollisionX[i]) // справа от препятствия
+				and (NextX - GetLength() >= CollisionX_Board[i])
+				)
+			{
+				cout << "\n\t\tВ коллизии" << endl;
+				ErrorCode = true;
+				break;
+			}
+		}
+		if (ErrorCode == true) {
+			CollisionX[i] = -100;
+			CollisionY[i] = -100;
+			CollisionCode = i + 1;
+			cout << "\n\tCollision Code = " << CollisionCode << endl;
+			break;
+		}
+
+		//направление движения объекта
+		if (KEY_DOWN(VK_LEFT)) {			//стрелка влево
+
+			NextX -= Step;
+			MoveTo(NextX, NextY);
+			Sleep(500);
+
+		}//if()
+
+		if (KEY_DOWN(VK_RIGHT)) {			//39 стрелка вправо
+
+			NextX += Step;
+			MoveTo(NextX, NextY);
+			Sleep(500);
+
+		}//if()
+
+		if (KEY_DOWN(VK_DOWN)) {			//40 стрелка вниз
+
+			NextY += Step;
+			MoveTo(NextX, NextY);
+			Sleep(500);
+
+		}//if()
+
+		if (KEY_DOWN(VK_UP)) {			//38 стрелка вверх
+
+			NextY -= Step;
+			MoveTo(NextX, NextY);
+			Sleep(500);
+
+		}//if()
+
+	}//while
+	*/
+}//Drag
+
 
 			/*----------------------------------------*/
 			/*        МЕТОДЫ КЛАССА Canister          */
@@ -254,12 +320,16 @@ void Canister::Show() { // отрисует канистру
 	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(0, 128, 0)); // Зададим перо и цвет пера - зеленый;
 	DrawCanister(Pen);
 	DeleteObject(Pen);			// Уничтожим нами созданные объекты
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
 };
 
 void Canister::Hide() { // спрячет канистру
 	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // Зададим перо и цвет пера - зеленый;
 	DrawCanister(Pen);
 	DeleteObject(Pen);			// Уничтожим нами созданные объекты
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
 };
 
 
@@ -308,9 +378,13 @@ void Lightning::Show() { // отрисует
 	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(255, 227, 0)); // Зададим перо и цвет пера - зеленый;
 	DrawLightning(Pen);
 	DeleteObject(Pen);			// Уничтожим нами созданные объекты
+	hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
 };
 
 void Lightning::Hide() { // спрячет канистру
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
 	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // Зададим перо и цвет пера - зеленый;
 	DrawLightning(Pen);
 	DeleteObject(Pen);			// Уничтожим нами созданные объекты
@@ -347,9 +421,9 @@ void Lightning::DrawLightning(HPEN Pen) {
 
 };
 			/*----------------------------------------*/
-			/*        МЕТОДЫ КЛАССА ABase              */
+			/*        МЕТОДЫ КЛАССА Base              */
 			/*----------------------------------------*/
-ABase::ABase(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor) : IDraw(InitX, InitY, InitColor)  // конструктор
+Base::Base(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor) : IDraw(InitX, InitY, InitColor)  // конструктор
 {
 	BodyCarLenght = InitBodyCarLenght;
 	Speed = InitSpeed;
@@ -394,9 +468,9 @@ void Car::DrawBaseWheels(HPEN Pen) {	// колеса
 
 
 
-void ABase::Show() { // отобразить объект
+void Base::Show() { // отобразить объект
 
-	/*string CarColor = GetBaseColor(); // получаем цвет из класса ABase
+	/*string CarColor = GetBaseColor(); // получаем цвет из класса Base
 	HPEN Pen;
 	if (CarColor == "red") 
 	Pen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0)); // Зададим перо и цвет пера - красный
@@ -409,7 +483,7 @@ void ABase::Show() { // отобразить объект
 	DeleteObject(Pen); // Уничтожим нами созданные объекты  */
 }
 
-void ABase::Hide() { // спрятать корпус машины
+void Base::Hide() { // спрятать корпус машины
 
 	/*HPEN Pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255)); // Зададим перо и цвет пера - красный
 	DrawBaseBody(Pen);
@@ -417,7 +491,7 @@ void ABase::Hide() { // спрятать корпус машины
 	DeleteObject(Pen); */
 } 
 
-void ABase::MoveTo(int NewX, int NewY) // поставить в соответствие новые координаты
+void Base::MoveTo(int NewX, int NewY) // поставить в соответствие новые координаты
 {
 	Hide();			// стирание старого контура машины
 	X = NewX;		// поменять координаты
@@ -425,12 +499,16 @@ void ABase::MoveTo(int NewX, int NewY) // поставить в соответс
 	Show();			// показать контур машины на новом месте
 }
 
-void ABase::Drag(int Step) // переместить объект
+void Base::Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Board[], int CollisionY_Board[],
+	int& CollisionCode, const int Max_CollisionNubmer) // переместить объект
 {
-	int FigX, FigY; // новые координаты фигуры
 
-	FigX = GetX();    // получаем начальное положение фигуры
-	FigY = GetY();
+	int NextX, NextY;				//новые координаты фигуры
+	int i;
+	bool ErrorCode = false;
+
+	NextX = GetX();
+	NextY = GetY();
 
 	while (1)	// цикл буксировки фигуры
 	{
@@ -442,42 +520,125 @@ void ABase::Drag(int Step) // переместить объект
 		// направление движения объекта
 		if (KEY_DOWN(VK_LEFT)) // стрелка влево  37
 		{
-			FigX -= GetMaxSpeed();
-			MoveTo(FigX, FigY);
+			//NextX -= GetMaxSpeed();
+			NextX -= Step;
+			MoveTo(NextX, NextY);
 			Sleep(500);
 		}
 
 		if (KEY_DOWN(VK_RIGHT)) // стрелка вправо  39
 		{
-			FigX += GetMaxSpeed();
-			MoveTo(FigX, FigY);
+			NextX += Step;
+			MoveTo(NextX, NextY);
 			Sleep(500);
 		}
 
 		if (KEY_DOWN(VK_DOWN)) // стрелка вниз  40
 		{
-			FigY += GetMaxSpeed();
-			MoveTo(FigX, FigY);
+			NextY += Step;
+			MoveTo(NextX, NextY);
 			Sleep(500);
 		}
 
 		if (KEY_DOWN(VK_UP)) // стрелка вверх  38
 		{
-			FigY -= GetMaxSpeed();
-			MoveTo(FigX, FigY);
+			NextY -= Step;
+			MoveTo(NextX, NextY);
 			Sleep(500);
 		}
+		for (i = 0; i < Max_CollisionNubmer; i++) {
+			
+			if (
+					(NextY  <= CollisionY[i]) // если над препятствием
+				and (NextY >= CollisionY_Board[i]) // под препятствием
+				and (NextX - GetBaseLenght() <= CollisionX[i]) // справа от препятствия
+				and (NextX - GetBaseLenght()  >= CollisionX_Board[i])
+				)
+			{
+				cout << "\n\t\tВ коллизии" << endl;
+				ErrorCode = true;
+				break;
+			}
+			if (((NextX > CollisionX[i] - 20) and (NextX < CollisionX_Board[i] + 20))
+				and ((NextY > CollisionY[i] - 20) and (NextY < CollisionY_Board[i] + 20))) {
+				//if (NextX == CollisionX[i] and NextY == CollisionY[i]){
+				cout << "\n\t\tIn collision" << endl;
+				ErrorCode = true;
+				break;
+			}
+			if (ErrorCode == true) {
+				CollisionX[i] = -100;
+				CollisionY[i] = -100;
+				CollisionCode = i + 1;
+				cout << "\n\tCollision Code = " << CollisionCode << endl;
+				break;
+			}
+			
+			
+		}
+		
+
+
+		/*for (i = 0; i < Max_CollisionNubmer; i++) {
+			//if (((NextX > CollisionX[i] - 1.1 * Width) or (NextX < CollisionX[i] + 0.1 * Width)) and ((NextY > CollisionY[i] - Hight) or (NextY < CollisionY[i]))) {
+			if (((NextX > CollisionX[i] - 20) and (NextX < CollisionX_Board[i] + 20))
+				and ((NextY > CollisionY[i] - 20) and (NextY < CollisionY_Board[i] + 20))) {
+				//if (NextX == CollisionX[i] and NextY == CollisionY[i]){
+				cout << "\n\t\tВ коллизии" << endl;
+				ErrorCode = true;
+				break;
+			}
+		}*/
+
+		if (ErrorCode == true) {
+			CollisionX[i] = -100; // вынести координаты за экран
+			CollisionY[i] = -100; // вынести координаты за экран
+			CollisionCode = i + 1; // новый код коллизии
+			cout << "\n\tКод столкновения = " << CollisionCode << endl;
+			break;
+		}
+
 	}
 
 };
 
+/*----------------------------------------*/
+/*        МЕТОДЫ КЛАССА CarWithBattery    */
+/*----------------------------------------*/
 
+
+CarWithBattery::CarWithBattery(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor) : CarWithHood(InitX, InitY, InitBodyCarLenght, InitSpeed, InitColor) // конструктор CarExhaustPipe
+{}
+
+void CarWithBattery::DrawBattery(HPEN Pen) {
+	SelectObject(hdc, Pen);			// сделаем перо активным
+	Rectangle(hdc, X - GetBaseLenght() / 3 - 30, Y - 160, X - GetBaseLenght() / 4, Y - 120); // выхлопная труба
+	DeleteObject(Pen);				// Уничтожим нами созданные объекты  
+}
+
+void CarWithBattery::Show()			  // показать машину с выхлопной трубой
+{
+
+	HPEN Pen = CreatePen(PS_SOLID, 2, get_color()); // Зададим перо и цвет пера - красный
+
+	CarWithHood::Show();
+	DrawBattery(Pen);			// выхлопная труба
+	DeleteObject(Pen);				// Уничтожим нами созданные объекты
+}
+
+void CarWithBattery::Hide()			// спрятать 
+{
+	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255));	// Зададим перо и цвет пера - белый
+	CarWithHood::Hide();
+	DrawBattery(Pen);			// выхлопная труба
+	DeleteObject(Pen);				// Уничтожим нами созданные объекты
+}
 
 		/*----------------------------------------*/
 		/*        МЕТОДЫ КЛАССА Car               */
 		/*----------------------------------------*/
 
-Car::Car(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor) : ABase(InitX, InitY, InitBodyCarLenght, InitSpeed, InitColor) // конструктор Car
+Car::Car(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor) : Base(InitX, InitY, InitBodyCarLenght, InitSpeed, InitColor) // конструктор Car
 {}
 
 void Car::DrawCarCabin(HPEN Pen) { // кабина 
@@ -492,7 +653,9 @@ void Car::DrawCarCabin(HPEN Pen) { // кабина
 
 void Car::Show()				// показать машину
 {
-	
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
+
 	HPEN Pen = CreatePen(PS_SOLID, 2, get_color()); // Зададим перо и цвет пера - красный
 	
 	DrawBaseBody(Pen);
@@ -538,7 +701,7 @@ CarWithHood::CarWithHood(int InitX, int InitY, int InitBodyCarLenght, int InitSp
 
 void CarWithHood::DrawCarHood(HPEN Pen) { // капот
 	SelectObject(hdc, Pen);			// сделаем перо активным
-	int heightABase = 50;
+	int heightBase = 50;
 	int heightCabin = 70;
 	int lenght = GetBaseLenght() / 3;
 	int a = GetBaseLenght() / 2;
@@ -546,22 +709,22 @@ void CarWithHood::DrawCarHood(HPEN Pen) { // капот
 	POINT poly[6];
 
 	poly[0].x = X;					// первая координата полигона
-	poly[0].y = Y - heightABase;
+	poly[0].y = Y - heightBase;
 
 	poly[1].x = X - lenght / 2 + 50;
-	poly[1].y = Y - heightABase - heightABase / 2;
+	poly[1].y = Y - heightBase - heightBase / 2;
 
 	poly[2].x = X - lenght / 2 - 10;
-	poly[2].y = Y - heightCabin / 2 - heightABase + heightCabin / 13;
+	poly[2].y = Y - heightCabin / 2 - heightBase + heightCabin / 13;
 
 	poly[3].x = X - a + lenght / 2 + lenght / 3;
-	poly[3].y = Y - heightCabin / 2 - heightABase + heightCabin / 18;
+	poly[3].y = Y - heightCabin / 2 - heightBase + heightCabin / 18;
 
 	poly[4].x = X - a + lenght / 2 + lenght / 4;
-	poly[4].y = Y - heightCabin / 2 - heightABase + heightCabin / 25;
+	poly[4].y = Y - heightCabin / 2 - heightBase + heightCabin / 25;
 
 	poly[5].x = X - a + lenght / 2;
-	poly[5].y = Y - heightCabin / 2 - heightABase;
+	poly[5].y = Y - heightCabin / 2 - heightBase;
 
 	Polyline(hdc, poly, 6);			// капот
 	DeleteObject(Pen);				// Уничтожим нами созданные объекты  
@@ -628,23 +791,23 @@ void CarWithLuggade::DrawCarLuggade(HPEN Pen) { // багажник
 
 	SelectObject(hdc, Pen);			// сделаем перо активным
 	int heightCabin = 70;
-	int heightABase = 50;
+	int heightBase = 50;
 	int lenght = GetBaseLenght() / 3;
 	int a = GetBaseLenght() / 2;
 	int radius = 70;
 	POINT poly[4];
 
 	poly[0].x = X - 2 * GetBaseLenght() / 3;					// первая координата полигона
-	poly[0].y = Y - heightCabin / 2 - heightABase;
+	poly[0].y = Y - heightCabin / 2 - heightBase;
 
 	poly[1].x = X - 2 * GetBaseLenght() / 3 - GetBaseLenght() / 3 + lenght / 5;
-	poly[1].y = Y - heightCabin / 2 - heightABase;
+	poly[1].y = Y - heightCabin / 2 - heightBase;
 
 	poly[2].x = X - 2 * GetBaseLenght() / 3 - GetBaseLenght() / 3;
-	poly[2].y = Y - heightCabin / 2 - heightABase + lenght / 5;
+	poly[2].y = Y - heightCabin / 2 - heightBase + lenght / 5;
 
 	poly[3].x = X - GetBaseLenght();
-	poly[3].y = Y - heightABase;
+	poly[3].y = Y - heightBase;
 
 	Polyline(hdc, poly, 4);			// капот
 	DeleteObject(Pen);				// Уничтожим нами созданные объекты  
@@ -677,23 +840,23 @@ CarWithHoodAndLuggade::CarWithHoodAndLuggade(int InitX, int InitY, int InitBodyC
 void CarWithHoodAndLuggade::DrawCarLuggade(HPEN Pen) { // багажник
 	SelectObject(hdc, Pen);			// сделаем перо активным
 	int heightCabin = 70;
-	int heightABase = 50;
+	int heightBase = 50;
 	int lenght = GetBaseLenght() / 3;
 	int a = GetBaseLenght() / 2;
 	int radius = 70;
 	POINT poly[4];
 
 	poly[0].x = X - 2 * GetBaseLenght() / 3;					// первая координата полигона
-	poly[0].y = Y - heightCabin / 2 - heightABase;
+	poly[0].y = Y - heightCabin / 2 - heightBase;
 
 	poly[1].x = X - 2 * GetBaseLenght() / 3 - GetBaseLenght() / 3 + lenght / 5;
-	poly[1].y = Y - heightCabin / 2 - heightABase;
+	poly[1].y = Y - heightCabin / 2 - heightBase;
 
 	poly[2].x = X - 2 * GetBaseLenght() / 3 - GetBaseLenght() / 3;
-	poly[2].y = Y - heightCabin / 2 - heightABase + lenght / 5;
+	poly[2].y = Y - heightCabin / 2 - heightBase + lenght / 5;
 
 	poly[3].x = X - GetBaseLenght();
-	poly[3].y = Y - heightABase;
+	poly[3].y = Y - heightBase;
 
 	Polyline(hdc, poly, 4);			// капот
 	DeleteObject(Pen);				// Уничтожим нами созданные объекты  
@@ -701,7 +864,7 @@ void CarWithHoodAndLuggade::DrawCarLuggade(HPEN Pen) { // багажник
 /*
 void CarWithHoodAndLuggade::DrawCarHood(HPEN Pen) { // капот
 	SelectObject(hdc, Pen);			// сделаем перо активным
-	int heightABase = 50;
+	int heightBase = 50;
 	int heightCabin = 70;
 	int lenght = GetBaseLenght() / 3;
 	int a = GetBaseLenght() / 2;
@@ -709,22 +872,22 @@ void CarWithHoodAndLuggade::DrawCarHood(HPEN Pen) { // капот
 	POINT poly[6];
 
 	poly[0].x = X;					// первая координата полигона
-	poly[0].y = Y - heightABase;
+	poly[0].y = Y - heightBase;
 
 	poly[1].x = X - lenght / 2 + 50;
-	poly[1].y = Y - heightABase - 30;
+	poly[1].y = Y - heightBase - 30;
 
 	poly[2].x = X - lenght / 2 - 10;
-	poly[2].y = Y - heightCabin / 2 - heightABase + heightCabin / 13;
+	poly[2].y = Y - heightCabin / 2 - heightBase + heightCabin / 13;
 
 	poly[3].x = X - a + lenght / 2 + lenght / 3;
-	poly[3].y = Y - heightCabin / 2 - heightABase + heightCabin / 18;
+	poly[3].y = Y - heightCabin / 2 - heightBase + heightCabin / 18;
 
 	poly[4].x = X - a + lenght / 2 + lenght / 4;
-	poly[4].y = Y - heightCabin / 2 - heightABase + heightCabin / 25;
+	poly[4].y = Y - heightCabin / 2 - heightBase + heightCabin / 25;
 
 	poly[5].x = X - a + lenght / 2;
-	poly[5].y = Y - heightCabin / 2 - heightABase;
+	poly[5].y = Y - heightCabin / 2 - heightBase;
 
 	Polyline(hdc, poly, 6);			// капот
 	DeleteObject(Pen);				// Уничтожим нами созданные объекты  
