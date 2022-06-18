@@ -80,17 +80,20 @@ int main()
 		{
 			
 			
-			const int Max_CarsNumber = 5;
+			const int Max_CarsNumber = 6;
 			const int Max_CollisionNumber = 3;
 
 			int X0_Barrier = 960;
 			int Y0_Barrier = 550;
 
+			int x0 = 950;
+			int y0 = 250;
+
 			Barriers* matrixBarriers[3] = {
 				// матрица переходов для смены 
 							  { new Canister(X0_Barrier, Y0_Barrier, 50, 50, RGB(0, 227, 0)) },
-							  { new Brick(050, 350, 80, 40, RGB(255, 227, 135)) } ,
-							  { new Lightning(800, 600, 90, 90, RGB(255, 227, 0)) }
+							  { new Brick(650, 350, 80, 40, RGB(255, 227, 135)) } ,
+							  { new Lightning(600, y0, 90, 90, RGB(255, 227, 0)) }
 			};
 			//массив координат объектов для коллизии
 			int CollisionX[Max_CollisionNumber] = { matrixBarriers[0]->GetX(), matrixBarriers[1]->GetX(),
@@ -109,23 +112,22 @@ int main()
 
 
 			//массив переходов 
-			int CollisionStates[Max_CollisionNumber][Max_CarsNumber] = { {5, 5, 5, 5, 2, },
-																		 {3, 3, 3, 3, 3, },
-																		 {-1, -1, -1, -1, -1} };
+			int CollisionStates[Max_CollisionNumber][Max_CarsNumber] = { {-1, 5, 5, 5, -1, 5},
+																		 {2, 1, 2, 1, 2, 1},
+																		 {6, 6, 6, 6, 6, -1} };
 
 			Car* BufCars[Max_CarsNumber];
 			Barriers* BufCollision[Max_CollisionNumber];
 
 			
 			int Choose = 0;			// вариант 
-			int DragChoose = 0;
-			int CollisionChoose = 0;
+			int DragChoose = 0; // выбор ID машины 
+			//int CollisionChoose = 0;  // кто будет двигаться : 1 - это машины, 2 - это помехи, 0 - никто
 			int i = 0;
-			int CollisionCode = 0;
-			int NewCollisionState = 0;
+			int CollisionCode = 0; // Код класса с кем столкновение
+			int NewCollisionState = 0; // Код класса коллизии в матрице на перечесении
 
-			int x0 = 950;
-			int y0 = 250;
+			
 			int add_x0 = x0;
 			int add_y0 = y0;
 
@@ -149,13 +151,16 @@ int main()
 			CarWithHoodAndLuggade ACarWithHoodAndLuggade(650, 250, 300, 50, RGB(0, 0, 0));
 			/************	 М А Ш И Н А  С   К А П О Т О М	  И  В Ы Х Л О П Н О Й   Т Р У Б О Й	***********/
 			CarExhaustPipe ACarExhaustPipe(add_x0, add_y0, 300, 50, RGB(255, 0, 0));
+			/************	 М А Ш И Н А  С  Б А Т А Р Е Е Й	***********/
+			CarWithBattery ACarWithBattery(add_x0, add_y0, 300, 50, RGB(255, 0, 0));
 
 			BufCars[ACar.GetTypeId() - 1] = &ACar;
 			BufCars[ACarWithHood.GetTypeId() - 1] = &ACarWithHood;
 			BufCars[ACarWithLuggade.GetTypeId() - 1] = &ACarWithLuggade;
 			BufCars[ACarWithHoodAndLuggade.GetTypeId() - 1] = &ACarWithHoodAndLuggade;
 			BufCars[ACarExhaustPipe.GetTypeId() - 1] = &ACarExhaustPipe;
-			
+			BufCars[ACarWithBattery.GetTypeId() - 1] = &ACarWithBattery;
+
 			Car* indCar;
 			Barriers* indBarriers;
 
@@ -171,7 +176,7 @@ int main()
 			BufCollision[ABrick.GetTypeId() - 1] = &ABrick;
 			BufCollision[ALightning.GetTypeId() - 1] = &ALightning;
 			
-			indBarriers = BufCollision[0];
+	
 
 
 			/*
@@ -225,10 +230,8 @@ int main()
 				while (1) {
 					if (KEY_DOWN(VK_ESCAPE)) break; // escape
 
-					
 					cin.clear(); //очистка буфера
 					
-
 					//cout << "\nВыберите, какой объект вы собираетесь перетащить:" << endl;
 					//cout << "1. Машину";
 					//cout << "\n2. Объект коллизии" << endl;
@@ -237,7 +240,6 @@ int main()
 					DragChoose = 1;
 
 					if (DragChoose == 1) {
-
 
 					/***************************************************/
 					/*				  РАБОТА С КОЛЛИЗИЯМИ			   */
@@ -248,13 +250,13 @@ int main()
 						indCar->Drag(step, CollisionX, CollisionY, CollisionX_Board, CollisionY_Board, CollisionCode, Max_CollisionNumber);
 						Sleep(500);
 
-						cout << "Номер класса для взаимодействия " << Choose << " - " << " Код коллизии " << CollisionCode << endl;
+						//cout << "Номер класса для взаимодействия " << Choose << " - " << " Код коллизии " << CollisionCode << endl;
 
 						if (CollisionCode > 0) {
 							NewCollisionState = CollisionStates[CollisionCode - 1][Choose - 1];
 						}
 
-						cout << "Новое коллизионное состояние " << NewCollisionState << endl;
+						//cout << "Новое коллизионное состояние " << NewCollisionState << endl;
 
 						if (NewCollisionState > 0) {
 
@@ -263,6 +265,7 @@ int main()
 
 							indBarriers = BufCollision[CollisionCode - 1];
 							indBarriers->Hide();
+							indCar->Hide();
 							indCar = BufCars[NewCollisionState - 1];
 
 							CollisionX[CollisionCode - 1] = -100; // убираем взаимодействующие объекты за экран
@@ -334,8 +337,7 @@ int main()
 					}*/
 				}
 			}
-			delete indBarriers;
-			delete indCar;
+			
 			
 		}
 	}

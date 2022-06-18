@@ -100,19 +100,22 @@ void Brick::Show() {				// отрисует кирпич
 	
 	HBRUSH hBrush = CreateSolidBrush(RGB(163, 146, 0)); // цвет тела - кирпичный; //создаём объект-кисть
 	SelectObject(hdc, hBrush);		//делаем кисть активной
-	DrawBrick(hBrush);
+	HPEN hPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0)); // Зададим перо и цвет пера - зеленый;
+
+	DrawBrick(hPen);
+
 	DeleteObject(hBrush);			// Уничтожим нами созданные объекты
-	hBrush = CreateSolidBrush(RGB(255, 255, 255));
-	SelectObject(hdc, hBrush);		//делаем кисть активной
+	
 };
 
 void Brick::Hide() { // спрячет кирпич
-	HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0)); // цвет тела - кирпичный; //создаём объект-кисть
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255)); // цвет тела - кирпичный; //создаём объект-кисть
 	SelectObject(hdc, hBrush);		//делаем кисть активной
-	DrawBrick(hBrush);
+	HPEN hPen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255)); // Зададим перо и цвет пера - зеленый;
+
+	DrawBrick(hPen);
 	DeleteObject(hBrush);			// Уничтожим нами созданные объекты
-	hBrush = CreateSolidBrush(RGB(255, 255, 255));
-	SelectObject(hdc, hBrush);		//делаем кисть активной
+
 };
 
 int Brick::GetBrickWidth() {		// получить ширину
@@ -138,13 +141,14 @@ void Brick::MoveTo(int NewX, int NewY) {
 };
 
 
-void Brick::DrawBrick(HBRUSH hBrush) {
-	
+void Brick::DrawBrick(HPEN hPen) {
+
+	SelectObject(hdc, hPen);		// сделаем перо активным
 	int length = GetLength();			// длина кирпича
 	int width = GetBrickWidth();			// длина кирпича
 	Rectangle(hdc, X - width, Y - length, X, Y); // канистра
 	Rectangle(hdc, X - width, Y - length, X, Y); //аргументы - это коордианты левого верхнего и правого нижнего углов
-	DeleteObject(hBrush); //Уничтожим нами созданный объект
+	
 
 };
 
@@ -194,18 +198,13 @@ void Barriers::Drag(int Step) {
 	int i;
 	//бесконечный цикл буксировки фигуры
 	while (1) {
-	
-
 		if (KEY_DOWN(VK_ESCAPE)) break;		//выход по «escape»
-		
-
 		//направление движения объекта
 		if (KEY_DOWN(VK_LEFT)) {			//стрелка влево
 
 			NextX -= Step;
 			MoveTo(NextX, NextY);
 			Sleep(500);
-
 		}//if()
 
 		if (KEY_DOWN(VK_RIGHT)) {			//39 стрелка вправо
@@ -325,11 +324,12 @@ void Canister::Show() { // отрисует канистру
 };
 
 void Canister::Hide() { // спрячет канистру
-	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // Зададим перо и цвет пера - зеленый;
-	DrawCanister(Pen);
-	DeleteObject(Pen);			// Уничтожим нами созданные объекты
+	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255)); // Зададим перо и цвет пера - зеленый;
 	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
 	SelectObject(hdc, hBrush);		//делаем кисть активной
+	DrawCanister(Pen);
+	DeleteObject(Pen);			// Уничтожим нами созданные объекты
+	
 };
 
 
@@ -385,7 +385,7 @@ void Lightning::Show() { // отрисует
 void Lightning::Hide() { // спрячет канистру
 	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
 	SelectObject(hdc, hBrush);		//делаем кисть активной
-	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(0, 0, 0)); // Зададим перо и цвет пера - зеленый;
+	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255)); // Зададим перо и цвет пера - зеленый;
 	DrawLightning(Pen);
 	DeleteObject(Pen);			// Уничтожим нами созданные объекты
 };
@@ -520,6 +520,7 @@ void Base::Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Boa
 		// направление движения объекта
 		if (KEY_DOWN(VK_LEFT)) // стрелка влево  37
 		{
+			//cout << "\n\tNextY = " << NextY << " CollY = " << CollisionY[2] - 20 << endl;
 			//NextX -= GetMaxSpeed();
 			NextX -= Step;
 			MoveTo(NextX, NextY);
@@ -528,6 +529,7 @@ void Base::Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Boa
 
 		if (KEY_DOWN(VK_RIGHT)) // стрелка вправо  39
 		{
+			//cout << "\n\tNextY = " << NextY << " CollY = " << CollisionY[2] - 20 << endl;
 			NextX += Step;
 			MoveTo(NextX, NextY);
 			Sleep(500);
@@ -535,6 +537,7 @@ void Base::Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Boa
 
 		if (KEY_DOWN(VK_DOWN)) // стрелка вниз  40
 		{
+			//cout << "\n\tNextY = " << NextY << " CollY = " << CollisionY[2] - 20 << endl;
 			NextY += Step;
 			MoveTo(NextX, NextY);
 			Sleep(500);
@@ -542,6 +545,7 @@ void Base::Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Boa
 
 		if (KEY_DOWN(VK_UP)) // стрелка вверх  38
 		{
+			//cout << "\n\tNextY = " << NextY << " CollY = " << CollisionY[2] - 20 << endl;
 			NextY -= Step;
 			MoveTo(NextX, NextY);
 			Sleep(500);
@@ -559,13 +563,16 @@ void Base::Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Boa
 				ErrorCode = true;
 				break;
 			}
-			if (((NextX > CollisionX[i] - 20) and (NextX < CollisionX_Board[i] + 20))
-				and ((NextY > CollisionY[i] - 20) and (NextY < CollisionY_Board[i] + 20))) {
-				//if (NextX == CollisionX[i] and NextY == CollisionY[i]){
-				cout << "\n\t\tIn collision" << endl;
+			// NextX = 800 & CollX = 780
+			// NextY = 550 & CollisionY = 580
+
+			if (((NextX >= CollisionX[i] - 80) and (NextX <= CollisionX_Board[i] + 80))
+				and ((NextY >= CollisionY[i] - 80) and (NextY <= CollisionY_Board[i] + 80))) {
+				cout << "\n\t\tВ коллизии" << endl;
 				ErrorCode = true;
 				break;
 			}
+
 			if (ErrorCode == true) {
 				CollisionX[i] = -100;
 				CollisionY[i] = -100;
@@ -573,28 +580,13 @@ void Base::Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Boa
 				cout << "\n\tCollision Code = " << CollisionCode << endl;
 				break;
 			}
-			
-			
 		}
-		
-
-
-		/*for (i = 0; i < Max_CollisionNubmer; i++) {
-			//if (((NextX > CollisionX[i] - 1.1 * Width) or (NextX < CollisionX[i] + 0.1 * Width)) and ((NextY > CollisionY[i] - Hight) or (NextY < CollisionY[i]))) {
-			if (((NextX > CollisionX[i] - 20) and (NextX < CollisionX_Board[i] + 20))
-				and ((NextY > CollisionY[i] - 20) and (NextY < CollisionY_Board[i] + 20))) {
-				//if (NextX == CollisionX[i] and NextY == CollisionY[i]){
-				cout << "\n\t\tВ коллизии" << endl;
-				ErrorCode = true;
-				break;
-			}
-		}*/
 
 		if (ErrorCode == true) {
 			CollisionX[i] = -100; // вынести координаты за экран
 			CollisionY[i] = -100; // вынести координаты за экран
 			CollisionCode = i + 1; // новый код коллизии
-			cout << "\n\tКод столкновения = " << CollisionCode << endl;
+			cout << "\n\tКод класса с кем столкновение = " << CollisionCode << endl;
 			break;
 		}
 
@@ -607,12 +599,12 @@ void Base::Drag(int Step, int CollisionX[], int CollisionY[], int CollisionX_Boa
 /*----------------------------------------*/
 
 
-CarWithBattery::CarWithBattery(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor) : CarWithHood(InitX, InitY, InitBodyCarLenght, InitSpeed, InitColor) // конструктор CarExhaustPipe
+CarWithBattery::CarWithBattery(int InitX, int InitY, int InitBodyCarLenght, int InitSpeed, COLORREF InitColor) : Car(InitX, InitY, InitBodyCarLenght, InitSpeed, InitColor) // конструктор CarExhaustPipe
 {}
 
 void CarWithBattery::DrawBattery(HPEN Pen) {
 	SelectObject(hdc, Pen);			// сделаем перо активным
-	Rectangle(hdc, X - GetBaseLenght() / 3 - 30, Y - 160, X - GetBaseLenght() / 4, Y - 120); // выхлопная труба
+	Rectangle(hdc, X - GetBaseLenght() * 2 / 3 - 30, Y - 160, X - GetBaseLenght() / 4 + 30, Y - 120); // выхлопная труба
 	DeleteObject(Pen);				// Уничтожим нами созданные объекты  
 }
 
@@ -621,15 +613,17 @@ void CarWithBattery::Show()			  // показать машину с выхлоп
 
 	HPEN Pen = CreatePen(PS_SOLID, 2, get_color()); // Зададим перо и цвет пера - красный
 
-	CarWithHood::Show();
+	Car::Show();
 	DrawBattery(Pen);			// выхлопная труба
 	DeleteObject(Pen);				// Уничтожим нами созданные объекты
 }
 
 void CarWithBattery::Hide()			// спрятать 
 {
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
 	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255));	// Зададим перо и цвет пера - белый
-	CarWithHood::Hide();
+	Car::Hide();
 	DrawBattery(Pen);			// выхлопная труба
 	DeleteObject(Pen);				// Уничтожим нами созданные объекты
 }
@@ -671,6 +665,10 @@ void Car::Show()				// показать машину
 
 void Car::Hide()				// скрыть машину
 {
+
+	HBRUSH hBrush = CreateSolidBrush(RGB(255, 255, 255));
+	SelectObject(hdc, hBrush);		//делаем кисть активной
+
 	HPEN Pen = CreatePen(PS_SOLID, 2, RGB(255, 255, 255)); // зададим перо и цвет пера - белый
 	DrawBaseBody(Pen);
 	DrawBaseWheels(Pen);

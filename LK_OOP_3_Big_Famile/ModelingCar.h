@@ -12,7 +12,7 @@ using namespace std;
 /*-----------------------     Класс Location    -------------------------*/
 class Location
 {
-protected:							   
+public:							   
 	int X;
 	int Y;
 
@@ -42,8 +42,6 @@ class IDraw : public Point
 public:
 	IDraw(int InitX, int InitY, COLORREF InitColor);
 	~IDraw();
-	//virtual void DrawBaseBody(HPEN Pen) = 0;		// отрисует заданным цветом основу на которую садятся колеса
-	//virtual void DrawBaseWheels(HPEN Pen) = 0;	// отрисует заданным колеса
 	virtual void Show() = 0;						//показать фигуру 
 	virtual void Hide() = 0;						//спрятать фигуру
 	virtual void MoveTo(int NewX, int NewY) = 0;	//переместить точку
@@ -117,7 +115,7 @@ private:
 	int id = 2;			// id класса
 public:
 	Brick(int InitX, int InitY, int InitWidth, int InitLength, COLORREF InitColor = RGB(185, 122, 87));
-	void DrawBrick(HBRUSH Pen); // отрисовкка канистры
+	void DrawBrick(HPEN hPen); // отрисовкка канистры
 	virtual void Show();
 	virtual void Hide();
 	int GetBrickWidth();						// получить ширину
@@ -234,7 +232,7 @@ public:
 	}
 };
 
-class CarWithBattery : public CarWithHood {
+class CarWithBattery : public Car {
 private:
 	int id = 6;							// id класса
 public:
